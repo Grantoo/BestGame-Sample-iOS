@@ -15,6 +15,8 @@
 // Uncomment for Testflight
 // #import "TestFlight.h"
 
+#import "PropellerSDK.h"
+
 // Uncomment if you want to use UserVoice
 //NSString * const kUserVoiceSite = @"youruservoicesite.uservoice.com";
 //NSString * const kUserVoiceKey = @"youruservoicekey";
@@ -76,6 +78,17 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     CCLOG(@"application:didFinishLaunchingWithOptions:");
+    
+    // check if the app has been launched due to a local notification
+    UILocalNotification* localNotification = [launchOptions objectForKey:UIApplicationLaunchOptionsLocalNotificationKey];
+    
+    if (localNotification)
+    {
+        if (![PropellerSDK handleLocalNotification:localNotification newLaunch:YES])
+        {
+            // this is not a Grantoo notification, handle as necessary
+        }
+    }
     
     // Create the main window
 	window_ = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
@@ -170,6 +183,15 @@
 //                                         andKey:kUserVoiceKey
 //                                      andSecret:kUserVoiceSecret];
     
+    [PropellerSDK setRootViewController:navController_];
+#ifdef DEBUG
+    [PropellerSDK useSandbox];
+    [PropellerSDK initialize:@"50ac1a38f6aae30200000001" gameSecret:@"c38b6697-b453-99c6-bc59-b50f0eca347f"];
+#else
+    [PropellerSDK initialize:@"50b665d167379a020000000b" gameSecret:@"a918a013-842e-ceb9-19ec-c0f981894d85"];
+#endif
+    [[PropellerSDK instance] setOrientation:kPropelSDKLandscape];
+    
 	// make main window visible
 	[window_ makeKeyAndVisible];
     
@@ -193,6 +215,9 @@
 
 -(void) applicationDidEnterBackground:(UIApplication*)application
 {
+    [[UIApplication sharedApplication] cancelAllLocalNotifications];
+    [PropellerSDK restoreAllLocalNotifications];
+    
 	if( [navController_ visibleViewController] == director_ )
 		[director_ stopAnimation];
 }
@@ -230,5 +255,14 @@
     
 	[super dealloc];
 }
+
+- (void)application:(UIApplication*)application didReceiveLocalNotification:(UILocalNotification*)notification
+{
+    if (![PropellerSDK handleLocalNotification:notification newLaunch:NO])
+    {
+        // this is not a Grantoo notification, handle as necessary
+    }
+}
+
 @end
 

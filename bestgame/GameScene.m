@@ -13,6 +13,8 @@
 // Uncomment for Flurry
 //#import "Flurry.h"
 
+#import "GamePayload.h"
+
 // Define your own GameKit Category Here.
 #define kGameKitCategory @"com.yourcompany.yourgame.highscore"
 
@@ -54,7 +56,22 @@
 	if (self = [super init]) {
         goBackPressed = false;
         
-        srandom(time(0));
+        BOOL seeded = NO;
+        
+        GamePayload* payLoad = [GamePayload instance];
+        
+        if ((payLoad != nil) && payLoad.activeFlag)
+        {
+            if (payLoad.gameType == OPTIONS_GAMETYPE_SAMESY_VALUE)
+            {
+                srandom(payLoad.seed + payLoad.round);
+                seeded = YES;
+            }
+        }
+        
+        if (!seeded) {
+            srandom(time(0));
+        }
         
         score = 0;
         presses = 0;
@@ -187,6 +204,19 @@
 
 -(void) finalize
 {
+    GamePayload* payLoad = [GamePayload instance];
+    
+    // validate the payload state
+    if (payLoad && payLoad.activeFlag)
+    {
+        // update the game payload
+        payLoad.score = score;
+        payLoad.completeFlag = true;
+        
+        // store the payload data to persistent storage
+        [payLoad store];
+    }
+    
     // kick us back automatically after three seconds
     [self performSelector:@selector(goBack:) withObject:nil afterDelay:3];
     

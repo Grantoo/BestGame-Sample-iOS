@@ -6,5 +6,7 @@
 
 #import "CCLayer.h"
 
-@interface MainMenuScene : CCLayer
+#import "PropellerSDK.h"
+
+@interface MainMenuScene : CCLayer<PropellerSDKDelegate>
 @end
