@@ -199,12 +199,14 @@
 //                                         andKey:kUserVoiceKey
 //                                      andSecret:kUserVoiceSecret];
     
+    NSString* auxData = @"{\"social\":[{\"provider\":\"<social_provider>\", \"cap\":[\"login\", \"invite\", \"share\"]}]}";
+    
     [PropellerSDK setRootViewController:navController_];
 #ifdef DEBUG
     [PropellerSDK useSandbox];
-    [PropellerSDK initialize:@"50ac1a38f6aae30200000001" gameSecret:@"c38b6697-b453-99c6-bc59-b50f0eca347f"];
+    [PropellerSDK initialize:@"50ac1a38f6aae30200000001" gameSecret:@"c38b6697-b453-99c6-bc59-b50f0eca347f" auxData:auxData];
 #else
-    [PropellerSDK initialize:@"50b665d167379a020000000b" gameSecret:@"a918a013-842e-ceb9-19ec-c0f981894d85"];
+    [PropellerSDK initialize:@"50b665d167379a020000000b" gameSecret:@"a918a013-842e-ceb9-19ec-c0f981894d85" auxData:auxData];
 #endif
     [[PropellerSDK instance] setOrientation:kPropelSDKLandscape];
     
