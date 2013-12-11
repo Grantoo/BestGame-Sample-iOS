@@ -90,6 +90,22 @@
         }
     }
     
+    // check if the app has been launched due to a push notification
+    NSDictionary* remoteNotificationDict = [launchOptions objectForKey:UIApplicationLaunchOptionsRemoteNotificationKey];
+    
+    if (remoteNotificationDict)
+    {
+        if (![PropellerSDK handleRemoteNotification:remoteNotificationDict newLaunch:YES])
+        {
+            // this is not a Grantoo notification, handle as necessary
+        }
+    }
+    
+    [[UIApplication sharedApplication] registerForRemoteNotificationTypes:
+     (UIRemoteNotificationTypeAlert |
+      UIRemoteNotificationTypeBadge |
+      UIRemoteNotificationTypeSound)];
+    
     // Create the main window
 	window_ = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
 
@@ -215,6 +231,10 @@
 
 -(void) applicationDidEnterBackground:(UIApplication*)application
 {
+    // clears the application badge number
+    [[UIApplication sharedApplication] setApplicationIconBadgeNumber:1];
+    [[UIApplication sharedApplication] setApplicationIconBadgeNumber:0];
+    
     [[UIApplication sharedApplication] cancelAllLocalNotifications];
     [PropellerSDK restoreAllLocalNotifications];
     
@@ -262,6 +282,30 @@
     {
         // this is not a Grantoo notification, handle as necessary
     }
+}
+
+- (void)application:(UIApplication*)application didReceiveRemoteNotification:(NSDictionary *)userInfo
+{
+    if (![PropellerSDK handleRemoteNotification:userInfo newLaunch:NO])
+    {
+        // this is not a Grantoo notification, handle as necessary
+    }
+}
+
+- (void)application:(UIApplication*)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken
+{
+    NSString* notificationToken = [[deviceToken description] stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"<>"]];
+    notificationToken = [notificationToken stringByReplacingOccurrencesOfString:@" " withString:@""];
+    
+    [PropellerSDK setNotificationToken:notificationToken];
+}
+
+- (void)application:(UIApplication*)application didFailToRegisterForRemoteNotificationsWithError:(NSError *)error
+{
+    NSString* errorMessage = [NSString stringWithFormat:@"Error %@", error];
+    NSLog(@"%@", errorMessage);
+    
+    [PropellerSDK setNotificationToken:nil];
 }
 
 @end
